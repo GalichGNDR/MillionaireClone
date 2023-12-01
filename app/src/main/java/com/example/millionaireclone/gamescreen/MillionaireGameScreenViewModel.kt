@@ -118,7 +118,6 @@ class MillionaireGameScreenViewModel @Inject constructor(
         _currItem.value!!.answers[optionIndex].isChosen = true
 
         changeCurrQuestionState(optionIndex)
-
     }
     private fun changeCurrQuestionState(optionIndex: Int) {
         val rightAnswer = _currItemRightAnswer.value
@@ -186,6 +185,11 @@ class MillionaireGameScreenViewModel @Inject constructor(
             state == SecondLifeAbilityState.CurrInUse && _secondLifeAbilityState.value == SecondLifeAbilityState.NotBeenUsed)
             _secondLifeAbilityState.value = state
 
+        if (state == SecondLifeAbilityState.BeenUsed) {
+            _abilitiesState.value = _abilitiesState.value.copy(
+                newLifeAbilityAvailable = false
+            )
+        }
     }
 
 
@@ -194,27 +198,27 @@ class MillionaireGameScreenViewModel @Inject constructor(
             repository.clearQuestionsAndAnswers()
         }
     }*/
-    /*init {
+   /* init {
         viewModelScope.launch(dispatcher) {
             val question = Question(
                 id = UUID.randomUUID().toString(),
-                text = "Who is The President of Ukraine?",
-                rightAnswer = "Zelensky"
+                text = "Who is The President of Russia?",
+                rightAnswer = "Putin"
             )
             repository.addItem(
                 question,
                 listOf(
                     OuterAnswer(
                         id = UUID.randomUUID().toString(),
-                        text = "Zelensky",
+                        text = "Trump",
                         questionId = question.id,
-                        isCorrect = true
+                        isCorrect = false
                     ),
                     OuterAnswer(
                         id = UUID.randomUUID().toString(),
                         text = "Putin",
                         questionId = question.id,
-                        isCorrect = false
+                        isCorrect = true
                     ),
                     OuterAnswer(
                         id = UUID.randomUUID().toString(),

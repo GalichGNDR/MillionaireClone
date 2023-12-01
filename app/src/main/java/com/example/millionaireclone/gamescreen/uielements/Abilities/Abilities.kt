@@ -1,6 +1,12 @@
 package com.example.millionaireclone.gamescreen.uielements.Abilities
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.StartOffset
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,6 +22,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -24,6 +34,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.millionaireclone.R
+import com.example.millionaireclone.gamescreen.CurrQuestionState
+import com.example.millionaireclone.gamescreen.SecondLifeAbilityState
 import kotlinx.coroutines.flow.MutableStateFlow
 
 data class AbilitiesState(
@@ -41,8 +53,26 @@ fun AbilitiesButtons(
     onCallAbility: () -> Unit,
     onSecondLifeAbility: () -> Unit,
     callAbilityAnswer: String,
-    abilitiesState: AbilitiesState
+    abilitiesState: AbilitiesState,
+
+    currQuestionState: MutableStateFlow<CurrQuestionState>,
+    secondLifeAbilityState: SecondLifeAbilityState,
 ) {
+    val currQuestionState = currQuestionState.collectAsState().value
+
+    val secondLifeAbilityAnim = animateColorAsState(
+        label = "secondLifeAbilityAnim",
+        targetValue = if (secondLifeAbilityState != SecondLifeAbilityState.CurrInUse)
+            Color.Cyan
+        else
+            Color(0xFFFFA500),
+        animationSpec = infiniteRepeatable(
+            animation = tween(300),
+            repeatMode = RepeatMode.Reverse,
+            initialStartOffset = StartOffset(1000)
+        )
+    ).value
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -72,7 +102,13 @@ fun AbilitiesButtons(
         AbilityButton(
             icon = R.drawable.game_new_life,
             onClicked = onSecondLifeAbility,
-            abilityAvailable = abilitiesState.newLifeAbilityAvailable
+            abilityAvailable = abilitiesState.newLifeAbilityAvailable,
+            borderColor = if (secondLifeAbilityState != SecondLifeAbilityState.CurrInUse)
+                Color.Cyan
+            else if (currQuestionState != CurrQuestionState.NotAnswered)
+                secondLifeAbilityAnim
+            else
+                Color.Green
         )
 
         AbilityButton(
@@ -88,7 +124,8 @@ fun AbilitiesButtons(
 fun AbilityButton(
     @DrawableRes icon: Int = R.drawable.game_person_icon,
     onClicked: () -> Unit = {},
-    abilityAvailable: Boolean = true
+    abilityAvailable: Boolean = true,
+    borderColor : Color = Color.Cyan
 ) {
     Box(
         modifier = Modifier
@@ -99,7 +136,7 @@ fun AbilityButton(
                 if (abilityAvailable) onClicked()
             },
             modifier = Modifier
-                .border(BorderStroke(5.dp, Color.Cyan), CircleShape)
+                .border(BorderStroke(5.dp, borderColor), CircleShape)
                 .background(Color(0xFF001233), CircleShape)
                 .fillMaxSize()
                 .padding(20.dp)

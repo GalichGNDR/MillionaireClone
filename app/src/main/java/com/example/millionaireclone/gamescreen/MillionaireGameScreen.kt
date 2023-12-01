@@ -64,7 +64,9 @@ fun MillionaireGameScreen(
             },
             onSecondLifeAbility = {viewModel.changeSecondLifeAbilityStateTo(SecondLifeAbilityState.CurrInUse)},
             callAbilityAnswer = uiState.callAbilityAnswer,
-            abilitiesState = uiState.abilitiesState
+            abilitiesState = uiState.abilitiesState,
+            currQuestionState = uiState.currItem?.state ?: MutableStateFlow(CurrQuestionState.NotAnswered),
+            secondLifeAbilityState = uiState.secondLifeAbilityState,
         )
         AnswerOptions(
             answers = uiState.currItem?.answers?: emptyList(),

@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -121,9 +122,6 @@ fun AnswerOption(
     updateQuestion: () -> Unit
 ) {
     val currQuestionStateVal = currQuestionState.collectAsState().value
-    val isClicked = remember {
-        mutableStateOf(false)
-    }
 
     val loseWinBorderColor = animateColorAsState(
         targetValue = if (answer.isChosen && currQuestionStateVal != CurrQuestionState.NotAnswered && answer.isCorrect)
@@ -162,14 +160,21 @@ fun AnswerOption(
             ) {
                 if (currQuestionStateVal == CurrQuestionState.NotAnswered && secondLifeAbilityState == SecondLifeAbilityState.CurrInUse) {
                     onClicked()
-                } else if (currQuestionStateVal != CurrQuestionState.NotAnswered && secondLifeAbilityState == SecondLifeAbilityState.CurrInUse){
+                }
+
+                if (currQuestionStateVal != CurrQuestionState.NotAnswered && secondLifeAbilityState == SecondLifeAbilityState.CurrInUse) {
                     onClicked()
+                    /* Spend second life as the last one.
+                    * Because otherwise we don't know which one answer is the next one after using second life.
+                    * SecondLifeAbilityState.beenUsed doesn't help. Probably should fix that in the future, but it works */
                     spendSecondLife()
+
                     CoroutineScope(Dispatchers.Default).launch {
                         delay(3000)
                         updateQuestion()
                     }
-                } else if (currQuestionStateVal == CurrQuestionState.NotAnswered) {
+                }
+                else if (currQuestionStateVal == CurrQuestionState.NotAnswered && secondLifeAbilityState != SecondLifeAbilityState.CurrInUse) {
                     onClicked()
                     CoroutineScope(Dispatchers.Default).launch {
                         delay(3000)
@@ -242,6 +247,16 @@ fun AnswerOption(
                             .padding(start = 5.dp))
                 }
             }
+        }
+    }
+
+
+    LaunchedEffect(currQuestionStateVal) {
+        if (currQuestionStateVal == CurrQuestionState.AnsweredRight) {
+            spendSecondLife()
+
+            delay(3000)
+            updateQuestion()
         }
     }
 }
